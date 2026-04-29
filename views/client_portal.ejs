@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --slate-50: #f8fafc;
+            --slate-800: #1e293b;
+            --blue-600: #2563eb;
+        }
+        body { background-color: var(--slate-50); font-family: 'Inter', sans-serif; }
+        .portal-card { border: 1px solid #e2e8f0; background: white; border-radius: 12px; }
+        .btn-primary { background-color: var(--blue-600); border: none; }
+        .code-area { background: #f1f5f9; font-family: monospace; border-radius: 6px; padding: 15px; border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold text-slate-800">Integrator <span style="color: var(--blue-600)">Client Portal</span></h2>
+                    <p class="text-muted">Gunakan halaman ini untuk mengambil akses token ke ekosistem UMKM.</p>
+                </div>
+
+                <div class="card portal-card shadow-sm p-4 mb-4">
+                    <h5 class="fw-bold mb-3">🔑 Generate Access Token</h5>
+                    <p class="small text-muted">Token ini diperlukan untuk otentikasi Bearer pada setiap request API melalui Gateway.</p>
+                    
+                    <div class="input-group mb-3">
+                        <input type="text" id="tokenOutput" class="form-control" placeholder="Klik tombol untuk membuat token..." readonly>
+                        <button class="btn btn-primary" onclick="generateToken()">Generate Token</button>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="copyToken()">Salin ke Clipboard</button>
+                </div>
+
+                <div class="card portal-card shadow-sm p-4">
+                    <h5 class="fw-bold mb-3">📖 Panduan Singkat</h5>
+                    <p class="small">Gunakan token di atas pada Header Request Anda:</p>
+                    <div class="code-area small">
+                        Authorization: Bearer [TOKEN_ANDA]
+                    </div>
+                    <p class="small mt-3 text-muted">Setiap request sukses akan dikenakan biaya layanan <strong>Rp 500</strong>.</p>
+                </div>
+                
+                <footer class="mt-5 text-center text-muted small">
+                    Integrator System &copy; 2026 - Zidan Hairra Ramadhan
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function generateToken() {
+            const res = await fetch('/generate-test-token');
+            const data = await res.json();
+            document.getElementById('tokenOutput').value = data.token;
+        }
+        function copyToken() {
+            const el = document.getElementById("tokenOutput");
+            if(!el.value) return alert("Generate token dulu!");
+            el.select();
+            document.execCommand("copy");
+            alert("Token berhasil disalin!");
+        }
+    </script>
+</body>
+</html>

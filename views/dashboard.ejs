@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Integrator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --slate-50: #f8fafc;   --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;  --slate-500: #64748b;
+            --slate-800: #1e293b;  --slate-900: #0f172a;
+            --blue-600: #2563eb;   --amber-50: #fffbeb;
+            --amber-700: #b45309;  --green-100: #dcfce7;
+            --green-700: #15803d;
+        }
+        body { background-color: var(--slate-50); color: var(--slate-900); font-family: 'Inter', sans-serif; }
+        .navbar { background-color: white !important; border-bottom: 1px solid var(--slate-100); }
+        .card { border: 1px solid var(--slate-200); background-color: white; border-radius: 8px; }
+        .card-stats { border-top: 4px solid var(--blue-600); }
+        .card-revenue { border-top: 4px solid var(--amber-700); background-color: var(--amber-50); }
+        .table thead { background-color: var(--slate-100); color: var(--slate-500); font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-light shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">🛡️ Integrator <span style="color: var(--blue-600)">System</span></a>
+            <div>
+                <a href="/client-portal" class="btn btn-sm btn-outline-primary me-2">Client Portal</a>
+                <a href="/" class="btn btn-sm btn-outline-secondary">Keluar</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card card-revenue shadow-sm p-3">
+                    <h6 style="color: var(--amber-700);" class="small fw-bold">Total Pendapatan Integrasi</h6>
+                    <h2 class="fw-bold mb-0">Rp <%= totalRevenue %></h2>
+                    <p class="small text-muted mb-0">Estimasi dari <%= logs.length %> transaksi</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-stats shadow-sm p-3">
+                    <h6 style="color: var(--blue-600);" class="small fw-bold">Total Traffic Gateway</h6>
+                    <h2 class="fw-bold mb-0"><%= logs.length %> Requests</h2>
+                    <p class="small text-muted mb-0">Status: Aktif & Terenkripsi</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm overflow-hidden">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0">Traffic Monitor (Audit Log)</h6>
+                <button onclick="location.reload()" class="btn btn-sm text-primary p-0 fw-bold" style="text-decoration:none;">Refresh</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Waktu</th>
+                            <th>Metode</th>
+                            <th>Service Tujuan</th>
+                            <th>Status Keamanan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (logs.length === 0) { %>
+                            <tr><td colspan="4" class="text-center py-5 text-muted">Belum ada aktivitas terekam.</td></tr>
+                        <% } else { %>
+                            <% logs.reverse().forEach(log => { %>
+                            <tr class="align-middle">
+                                <td class="ps-4 small text-muted"><%= log.waktu %></td>
+                                <td><span class="badge bg-light text-primary px-2"><%= log.metode %></span></td>
+                                <td class="fw-bold"><%= log.url_tujuan %></td>
+                                <td><span class="badge" style="background-color: var(--green-100); color: var(--green-700);">JWT Verified</span></td>
+                            </tr>
+                            <% }) %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
