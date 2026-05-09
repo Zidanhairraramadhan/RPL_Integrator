@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Portal</title>
+    <title>Client Portal - Integrator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
@@ -16,7 +16,7 @@
         .portal-card { border: 1px solid #e2e8f0; background: white; border-radius: 12px; }
         .btn-primary { background-color: var(--blue-600); border: none; }
         .btn-success { background-color: var(--green-600); border: none; }
-        .code-area { background: #f1f5f9; font-family: monospace; border-radius: 6px; padding: 15px; border: 1px solid #e2e8f0; }
+        .code-area { background: #1e293b; color: #38bdf8; font-family: monospace; border-radius: 6px; padding: 15px; border: 1px solid #e2e8f0; }
         pre { white-space: pre-wrap; word-wrap: break-word; }
     </style>
 </head>
@@ -26,12 +26,12 @@
             <div class="col-md-8">
                 <div class="text-center mb-5">
                     <h2 class="fw-bold text-slate-800">Integrator <span style="color: var(--blue-600)">Client Portal</span></h2>
-                    <p class="text-muted">Gunakan halaman ini untuk mengambil akses token dan menguji ekosistem UMKM.</p>
+                    <p class="text-muted">Ambil akses token dan uji integrasi untuk 6 aplikasi ekosistem UMKM.</p>
                 </div>
 
                 <div class="card portal-card shadow-sm p-4 mb-4">
                     <h5 class="fw-bold mb-3">🔑 Generate Access Token</h5>
-                    <p class="small text-muted">Token ini diperlukan untuk otentikasi Bearer pada setiap request API melalui Gateway.</p>
+                    <p class="small text-muted">Token ini diperlukan untuk otentikasi Bearer pada setiap request API.</p>
                     
                     <div class="input-group mb-3">
                         <input type="text" id="tokenOutput" class="form-control" placeholder="Klik tombol untuk membuat token..." readonly>
@@ -41,27 +41,31 @@
                 </div>
 
                 <div class="card portal-card shadow-sm p-4 mb-4 border-primary">
-                    <h5 class="fw-bold mb-3 text-primary">🚀 API Simulator (Live Test)</h5>
-                    <p class="small text-muted">Simulasi pengiriman request API langsung dari dashboard tanpa Postman.</p>
+                    <h5 class="fw-bold mb-3 text-primary">🚀 API Simulator (Live Test 6 Aplikasi)</h5>
+                    <p class="small text-muted">Uji kirim request ke semua layanan ekosistem (Biaya Rp 500/request).</p>
                     
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">1. Pilih Endpoint Tujuan</label>
+                        <label class="form-label small fw-bold">1. Pilih Aplikasi Tujuan</label>
                         <select id="testEndpoint" class="form-select">
-                            <option value="/integrator/smartbank/pembayaran">SmartBank - Transaksi Pembayaran (Biaya Rp 500)</option>
-                            <option value="/integrator/marketplace/orders">Marketplace - Kirim Order UMKM (Biaya Rp 500)</option>
+                            <option value="/integrator/smartbank/pembayaran">1. SmartBank - Pembayaran & Saldo</option>
+                            <option value="/integrator/marketplace/orders">2. Marketplace - Pesanan Produk</option>
+                            <option value="/integrator/logistik/shipping">3. LogistiKita - Pengiriman Barang</option>
+                            <option value="/integrator/supplier/restock">4. SupplierHub - Stok Bahan Baku</option>
+                            <option value="/integrator/pos/transaction">5. POS / Kasir - Transaksi Toko</option>
+                            <option value="/integrator/umkm-insight/analytics">6. UMKM Insight - Analitik Data</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">2. Masukkan Token</label>
-                        <input type="text" id="testToken" class="form-control" placeholder="Tempel token yang sudah digenerate di sini...">
+                        <label class="form-label small fw-bold">2. Token Bearer</label>
+                        <input type="text" id="testToken" class="form-control" placeholder="Tempel token di sini...">
                     </div>
 
                     <button onclick="jalankanTes()" class="btn btn-success w-100 fw-bold">Kirim Request Sekarang</button>
                     
                     <div class="mt-4">
                         <label class="form-label small fw-bold">Server Response:</label>
-                        <div class="code-area small bg-dark text-success" id="jsonResponse">
+                        <div class="code-area small" id="jsonResponse">
                             // Respon JSON akan muncul di sini...
                         </div>
                     </div>
@@ -69,11 +73,11 @@
 
                 <div class="card portal-card shadow-sm p-4">
                     <h5 class="fw-bold mb-3">📖 Panduan Singkat</h5>
-                    <p class="small">Jika menggunakan aplikasi eksternal, gunakan Header berikut:</p>
-                    <div class="code-area small">
+                    <p class="small">Gunakan Header berikut pada aplikasi Anda:</p>
+                    <div class="code-area small bg-light text-dark">
                         Authorization: Bearer [TOKEN_ANDA]
                     </div>
-                    <p class="small mt-3 text-muted">Setiap request sukses akan otomatis tercatat di <strong>Admin Dashboard</strong> dan dikenakan biaya <strong>Rp 500</strong>.</p>
+                    <p class="small mt-3 text-muted">Setiap request sukses tercatat otomatis dan dikenakan biaya <strong>Rp 500</strong>.</p>
                 </div>
                 
                 <footer class="mt-5 text-center text-muted small">
@@ -89,7 +93,6 @@
             const data = await res.json();
             const output = document.getElementById('tokenOutput');
             output.value = data.token;
-            // Otomatis isi token ke simulator untuk mempermudah
             document.getElementById('testToken').value = data.token;
         }
 
@@ -106,11 +109,10 @@
             const token = document.getElementById('testToken').value;
             const responseBox = document.getElementById('jsonResponse');
 
-            if(!token) return alert("Error: Anda butuh token untuk melakukan tes!");
+            if(!token) return alert("Error: Token wajib diisi!");
 
-            responseBox.innerText = "// Sedang mengirim request...";
-            responseBox.classList.remove('text-success');
-            responseBox.classList.add('text-warning');
+            responseBox.innerText = "// Sedang memproses request...";
+            responseBox.style.color = "#fbbf24"; // text-warning
 
             try {
                 const res = await fetch(endpoint, {
@@ -120,18 +122,18 @@
                         'Authorization': 'Bearer ' + token
                     },
                     body: JSON.stringify({ 
-                        status: "Success",
-                        message: "Request dari API Simulator Internal",
-                        tester: "Richard & Zidan"
+                        status: "Testing",
+                        message: "Request Simulasi Integrasi UMKM",
+                        developer: "Kelompok 7"
                     })
                 });
 
                 const data = await res.json();
                 responseBox.innerText = JSON.stringify(data, null, 2);
-                responseBox.classList.replace('text-warning', 'text-success');
+                responseBox.style.color = "#38bdf8"; // text-success
             } catch (err) {
                 responseBox.innerText = "// Error: " + err.message;
-                responseBox.classList.replace('text-warning', 'text-danger');
+                responseBox.style.color = "#f87171"; // text-danger
             }
         }
     </script>
