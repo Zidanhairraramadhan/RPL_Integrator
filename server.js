@@ -8,38 +8,52 @@ const gatewayRoutes = require('./routes/gateway');
 
 const app = express();
 
-// Konfigurasi View Engine EJS sesuai standar visual
+// Konfigurasi View Engine EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.json());
-// Folder public digunakan untuk menyimpan file statis seperti PDF dokumentasi
+// Folder public untuk file statis (PDF, Gambar, CSS)
 app.use(express.static('public'));
 
-// Variabel Global untuk menyimpan Log (Fitur 3: Logging)
+// Variabel Global untuk menyimpan Log
 global.requestLogs = []; 
 
-// --- ROUTE UI (Antarmuka Pengguna) ---
-
-// 1. Landing Page - Gerbang utama informasi Gateway
+// --- 1. ROUTE HALAMAN UTAMA (LANDING PAGE) ---
+// Ini adalah halaman yang muncul pertama kali saat buka localhost:3000
 app.get('/', (req, res) => {
     res.render('index');
 });
 
-// 2. Dashboard Admin - Monitoring Traffic & Monetisasi (Fitur 3 & 4)
+// --- 2. ROUTE ANTARMUKA PENGGUNA LAINNYA ---
+
+// Dashboard Admin (Hanya terbuka jika diklik dari Landing Page)
 app.get('/dashboard', (req, res) => {
     res.render('dashboard', { 
         logs: global.requestLogs,
-        totalRevenue: global.requestLogs.length * 500 // Sesuai Aturan No. 9
+        totalRevenue: global.requestLogs.length * 500 
     });
 });
 
-// 3. Client Portal - Halaman mandiri untuk kelompok lain mengambil token
+// Client Portal (Halaman ambil token)
 app.get('/client-portal', (req, res) => {
     res.render('client_portal');
 });
 
-// 4. API Generator Token - Endpoint untuk membuat token JWT (Fitur 2: Validasi)
+// Rute Download Dokumentasi
+app.get('/download-docs', (req, res) => {
+    const file = path.join(__dirname, 'public', 'Panduan_Integrasi_API_Update.pdf');
+    res.download(file, (err) => {
+        if (err) {
+            console.error("File dokumentasi tidak ditemukan!");
+            res.status(404).send("File dokumentasi sedang disiapkan.");
+        }
+    });
+});
+
+// --- 3. API & GATEWAY LOGIC ---
+
+// Endpoint Generate Token
 app.get('/generate-test-token', (req, res) => {
     const payload = { 
         user_id: "714240061", 
@@ -52,26 +66,14 @@ app.get('/generate-test-token', (req, res) => {
     res.json({ token: token });
 });
 
-// 5. Download Dokumentasi API - Untuk tombol di Landing Page
-app.get('/download-docs', (req, res) => {
-    const file = path.join(__dirname, 'public', 'Panduan_Integrasi_API_Update.pdf');
-    res.download(file, (err) => {
-        if (err) {
-            console.error("File dokumentasi tidak ditemukan di folder public!");
-            res.status(404).send("File dokumentasi sedang disiapkan.");
-        }
-    });
-});
-
-// --- ROUTE API GATEWAY (Inti Orchestrator) ---
+// Middleware & Orchestrator (Aturan No. 1, 2, 3)
 app.use('/integrator', loggerMiddleware, validateRequest, gatewayRoutes);
 
 // Menjalankan Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`=================================================`);
-    console.log(`   SERVER INTEGRATOR AKTIF - PORT ${PORT}        `);
-    console.log(`   Admin Dashboard : http://localhost:${PORT}/dashboard `);
-    console.log(`   Client Portal   : http://localhost:${PORT}/client-portal `);
+    console.log(`   SISTEM INTEGRATOR BERHASIL DIJALANKAN         `);
+    console.log(`   Akses Utama : http://localhost:${PORT}        `);
     console.log(`=================================================`);
 });

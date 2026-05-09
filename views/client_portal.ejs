@@ -10,11 +10,14 @@
             --slate-50: #f8fafc;
             --slate-800: #1e293b;
             --blue-600: #2563eb;
+            --green-600: #16a34a;
         }
         body { background-color: var(--slate-50); font-family: 'Inter', sans-serif; }
         .portal-card { border: 1px solid #e2e8f0; background: white; border-radius: 12px; }
         .btn-primary { background-color: var(--blue-600); border: none; }
+        .btn-success { background-color: var(--green-600); border: none; }
         .code-area { background: #f1f5f9; font-family: monospace; border-radius: 6px; padding: 15px; border: 1px solid #e2e8f0; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
     </style>
 </head>
 <body>
@@ -23,7 +26,7 @@
             <div class="col-md-8">
                 <div class="text-center mb-5">
                     <h2 class="fw-bold text-slate-800">Integrator <span style="color: var(--blue-600)">Client Portal</span></h2>
-                    <p class="text-muted">Gunakan halaman ini untuk mengambil akses token ke ekosistem UMKM.</p>
+                    <p class="text-muted">Gunakan halaman ini untuk mengambil akses token dan menguji ekosistem UMKM.</p>
                 </div>
 
                 <div class="card portal-card shadow-sm p-4 mb-4">
@@ -34,20 +37,47 @@
                         <input type="text" id="tokenOutput" class="form-control" placeholder="Klik tombol untuk membuat token..." readonly>
                         <button class="btn btn-primary" onclick="generateToken()">Generate Token</button>
                     </div>
-                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="copyToken()">Salin ke Clipboard</button>
+                    <button class="btn btn-outline-secondary btn-sm w-100 mb-3" onclick="copyToken()">Salin ke Clipboard</button>
+                </div>
+
+                <div class="card portal-card shadow-sm p-4 mb-4 border-primary">
+                    <h5 class="fw-bold mb-3 text-primary">🚀 API Simulator (Live Test)</h5>
+                    <p class="small text-muted">Simulasi pengiriman request API langsung dari dashboard tanpa Postman.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">1. Pilih Endpoint Tujuan</label>
+                        <select id="testEndpoint" class="form-select">
+                            <option value="/integrator/smartbank/pembayaran">SmartBank - Transaksi Pembayaran (Biaya Rp 500)</option>
+                            <option value="/integrator/marketplace/orders">Marketplace - Kirim Order UMKM (Biaya Rp 500)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">2. Masukkan Token</label>
+                        <input type="text" id="testToken" class="form-control" placeholder="Tempel token yang sudah digenerate di sini...">
+                    </div>
+
+                    <button onclick="jalankanTes()" class="btn btn-success w-100 fw-bold">Kirim Request Sekarang</button>
+                    
+                    <div class="mt-4">
+                        <label class="form-label small fw-bold">Server Response:</label>
+                        <div class="code-area small bg-dark text-success" id="jsonResponse">
+                            // Respon JSON akan muncul di sini...
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card portal-card shadow-sm p-4">
                     <h5 class="fw-bold mb-3">📖 Panduan Singkat</h5>
-                    <p class="small">Gunakan token di atas pada Header Request Anda:</p>
+                    <p class="small">Jika menggunakan aplikasi eksternal, gunakan Header berikut:</p>
                     <div class="code-area small">
                         Authorization: Bearer [TOKEN_ANDA]
                     </div>
-                    <p class="small mt-3 text-muted">Setiap request sukses akan dikenakan biaya layanan <strong>Rp 500</strong>.</p>
+                    <p class="small mt-3 text-muted">Setiap request sukses akan otomatis tercatat di <strong>Admin Dashboard</strong> dan dikenakan biaya <strong>Rp 500</strong>.</p>
                 </div>
                 
                 <footer class="mt-5 text-center text-muted small">
-                    Integrator System &copy; 2026 - Zidan Hairra Ramadhan
+                    Integrator System &copy; 2026 - Richard Firmansya & Zidan Hairra Ramadhan
                 </footer>
             </div>
         </div>
@@ -57,14 +87,52 @@
         async function generateToken() {
             const res = await fetch('/generate-test-token');
             const data = await res.json();
-            document.getElementById('tokenOutput').value = data.token;
+            const output = document.getElementById('tokenOutput');
+            output.value = data.token;
+            // Otomatis isi token ke simulator untuk mempermudah
+            document.getElementById('testToken').value = data.token;
         }
+
         function copyToken() {
             const el = document.getElementById("tokenOutput");
             if(!el.value) return alert("Generate token dulu!");
             el.select();
             document.execCommand("copy");
             alert("Token berhasil disalin!");
+        }
+
+        async function jalankanTes() {
+            const endpoint = document.getElementById('testEndpoint').value;
+            const token = document.getElementById('testToken').value;
+            const responseBox = document.getElementById('jsonResponse');
+
+            if(!token) return alert("Error: Anda butuh token untuk melakukan tes!");
+
+            responseBox.innerText = "// Sedang mengirim request...";
+            responseBox.classList.remove('text-success');
+            responseBox.classList.add('text-warning');
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ 
+                        status: "Success",
+                        message: "Request dari API Simulator Internal",
+                        tester: "Richard & Zidan"
+                    })
+                });
+
+                const data = await res.json();
+                responseBox.innerText = JSON.stringify(data, null, 2);
+                responseBox.classList.replace('text-warning', 'text-success');
+            } catch (err) {
+                responseBox.innerText = "// Error: " + err.message;
+                responseBox.classList.replace('text-warning', 'text-danger');
+            }
         }
     </script>
 </body>
